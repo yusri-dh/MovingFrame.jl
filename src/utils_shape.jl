@@ -22,18 +22,14 @@ end
 Change array of vertex coordinates into array of vertex type
 """
 function array_to_vertex(a::AbstractArray)
-    M = GLNormalMesh
-    V = vertextype(M)
-    return [V(vertex) for vertex in a]
+    return [Point3f0(vertex) for vertex in a]
 end
 
 """
 Change array of face into array of face type
 """
 function array_to_faces(a::AbstractArray)
-    M = GLNormalMesh
-    F = facetype(M)
-    return [F(face) for face in a]
+    return [TriangleFace{OffsetInteger{-1,UInt32}}(face) for face in a]
 end
 
 """
@@ -53,9 +49,7 @@ end # function]
 Change matrix to vertices
 """
 function matrix_to_vertex(mat::AbstractMatrix)
-    M = GLNormalMesh
-    V = vertextype(M)
-    return [V(mat[i,:]) for i in 1:size(mat,1)]
+    return [Point3f0(mat[i,:]) for i in 1:size(mat,1)]
 end # function
 
 
@@ -77,11 +71,11 @@ function mesh_centering(verts::Vector{T1},faces::Vector{T2}) where {T1,T2}
     end
     return new_verts,faces
 end
-function mesh_centering(mesh::GLNormalMesh)
+function mesh_centering(mesh::Mesh)
     verts = decompose(Point3f0,mesh)
-    faces = decompose(Face{3,Int},mesh)
-    verts,faces = mesh_centering(verts,faces)
-    return GLNormalMesh(verts,faces)
+    triangles = decompose(Face{3,Int},mesh)
+    verts,triangles = mesh_centering(verts,triangles)
+    return Mesh(verts,faces(mesh))
 end
 
 
@@ -104,7 +98,7 @@ function mesh_volume(verts::Array{Point{3,T1}},
     return abs(total_vol)
 end
 
-function mesh_volume(mesh::GLNormalMesh)
+function mesh_volume(mesh::Mesh)
     verts = decompose(Point3f0,mesh)
     faces = decompose(Face{3,Int},mesh)
 
@@ -135,17 +129,18 @@ function volume_normalizing2(verts::Array{Point{3,<:Real}},
     return new_verts,faces
 end
 
-function volume_normalizing(mesh::GLNormalMesh)
+function volume_normalizing(mesh::Mesh)
     verts = decompose(Point3f0,mesh)
-    faces = decompose(Face{3,Int},mesh)
-    verts,faces = volume_normalizing(verts,faces)
-    return GLNormalMesh(verts,faces)
+    triangles = decompose(Face{3,Int},mesh)
+    verts,triangles = volume_normalizing(verts,triangles)
+    return Mesh(verts,faces(mesh))
 end
 """
 This function return the mesh object from verts and faces
 """
 function create_mesh(verts,faces)
-    return GLNormalMesh(verts,faces)
+    faces = convert(Vector{TriangleFace{OffsetInteger{-1,UInt32}}},faces)
+    return Mesh(verts,faces)
 end
 """
 This function return the angle at vertex v1 from triangle(v1,v2,v3)
@@ -280,14 +275,13 @@ function double_surface_area(v,f)
     return surface_area(v,f) * 2.0
 end
 
-function mesh_reorientation(mesh::AbstractMesh, T, N, B)
+function mesh_reorientation(mesh::Mesh, T, N, B)
     verts = decompose(Point3f0, mesh)
-    triangles = decompose(Face{3,Int}, mesh)
     mat_verts = sh.array_of_array_to_matrix(verts)
     new_mat_verts = [T N B] \ mat_verts'
     new_mat_verts = new_mat_verts'
     new_verts = sh.matrix_to_vertex(new_mat_verts)
-    return GLNormalMesh(new_verts, triangles)
+    return Mesh(new_verts, faces(mesh))
 end
 function mesh_reorientation(mat_verts::AbstractMatrix, T, N, B)
     new_mat_verts = [T N B] \ mat_verts'

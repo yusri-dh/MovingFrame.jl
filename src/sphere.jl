@@ -93,7 +93,7 @@ function icosphere(subdiv=3,scale = 1.0)
             [7, 3, 11],
             [9, 7, 8],
             [10, 9, 2]]
-    
+
     middle_point_cache = Dict{String,Int}()
     for i in 1:subdiv
         faces_subdiv = Array{Int64,1}[]
@@ -110,6 +110,7 @@ function icosphere(subdiv=3,scale = 1.0)
     end
     v = array_to_vertex(verts)
     f = array_to_faces(faces)
-    sphere = GLNormalMesh(v,f)
+    f= convert(Vector{TriangleFace{OffsetInteger{-1,UInt32}}},f)
+    sphere = Mesh(v,f)
     return sphere
 end

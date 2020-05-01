@@ -136,7 +136,7 @@ function gaussian_curvature(verts,faces)
     # return gauss_K ./ vertex_adjacent_area(verts,faces)
     return gauss_K
 end
-function gaussian_curvature(mesh::AbstractMesh)
+function gaussian_curvature(mesh::Mesh)
     verts = decompose(Point3f0,mesh)
     faces = decompose(Face{3,Int},mesh)
     return gaussian_curvature(verts,faces)
@@ -155,7 +155,7 @@ function mean_curvature(verts,faces)
     # return gauss_K ./ vertex_adjacent_area(verts,faces)
     return reshape(h,:)
 end
-function mean_curvature(mesh::AbstractMesh)
+function mean_curvature(mesh::Mesh)
     verts = decompose(Point3f0,mesh)
     faces = decompose(Face{3,Int},mesh)
     return mean_curvature(verts,faces)
@@ -190,9 +190,9 @@ function spherization(verts,faces,n_step = 10, delta = 0.001;min_diff = 1e-13)
     new_verts =  mean_curvature_flow(verts,faces,n_step, delta;min_diff = min_diff)
     return new_verts,faces
 end
-function spherization(mesh::AbstractMesh,n_step = 10, delta = 0.001;min_diff = 1e-13)
+function spherization(mesh::Mesh,n_step = 10, delta = 0.001;min_diff = 1e-13)
     verts = decompose(Point3f0,mesh)
-    faces = decompose(Face{3,Int},mesh)
-    new_verts =  mean_curvature_flow(verts,faces,n_step, delta;min_diff = min_diff)
-    return GLNormalMesh(new_verts,faces)
+    triangles = decompose(Face{3,Int},mesh)
+    new_verts =  mean_curvature_flow(verts,triangles,n_step, delta;min_diff = min_diff)
+    return Mesh(new_verts,faces(mesh))
 end

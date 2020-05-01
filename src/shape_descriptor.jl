@@ -38,7 +38,7 @@ function spharm_descriptor(
     return (Cx = c_x, Cy = c_y, Cz = c_z)
 end
 function spharm_descriptor(
-    mesh::AbstractMesh;
+    mesh::Mesh;
     centered = true,
     normalized = true,
     l_max = 6,
@@ -93,7 +93,7 @@ function spharm_descriptor(
     return (Cx = c_x, Cy = c_y, Cz = c_z)
 end
 function spharm_descriptor(
-    mesh::AbstractMesh,
+    mesh::Mesh,
     verts_sphere::Vector{Point{3,T1}};
     centered = true,
     normalized = true,
@@ -152,7 +152,7 @@ function spharm_descriptor_v(
     return c_v
 end
 function spharm_descriptor_v(
-    mesh::AbstractMesh,
+    mesh::Mesh,
     val::Vector{<:AbstractFloat};
     centered = true,
     normalized = true,
@@ -206,7 +206,7 @@ function spharm_descriptor_v(
     return c_v
 end
 function spharm_descriptor_v(
-    mesh::AbstractMesh,
+    mesh::Mesh,
     verts_sphere::Vector{Point{3,T1}},
     val::Vector{<:AbstractFloat};
     centered = true,
@@ -288,6 +288,6 @@ function reconstruct_mesh(
     for i in eachindex(verts)
         verts[i] = Point3f0(x[i], y[i], z[i])
     end
-    mesh = GLNormalMesh(verts, triangles)
+    mesh = Mesh(verts, faces(sphere))
     return mesh
 end

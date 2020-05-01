@@ -11,7 +11,7 @@ mutable struct MovingCells
     curvature::Array{Float64,1}
     torsion::Array{Float64,1}
     speed::Array{Float64,1}
-    shapes::Array{GLNormalMesh,1}
+    shapes::Array{Mesh,1}
     Spharm_Cx::Array{Float64,2}
     Spharm_Cy::Array{Float64,2}
     Spharm_Cz::Array{Float64,2}
@@ -78,7 +78,7 @@ function extract_shape_data(df; base_dir = pwd())
     cell_id = df.cellid
     gc_cell_id = df.gc_cellid
     t = convert.(Int, df.t)
-    shapes = Vector{GLNormalMesh}(undef, length(gc_cell_id))
+    shapes = Vector{Mesh}(undef, length(gc_cell_id))
     for i in eachindex(gc_cell_id)
         fname = joinpath(
             base_dir,
