@@ -80,3 +80,27 @@ Cz = MovingFrame.array_of_array_to_matrix([coef[:Cz] for coef in spharm_coefs])
 xy_ecc = Cx[:, 4] ./ Cy[:, 2]
 xz_ecc = Cx[:, 4] ./ Cz[:, 3]
 yz_ecc = Cy[:, 2] ./ Cz[:, 3]
+moving_cell = MovingCells(
+    new_coordinates,
+    time,
+    length(time),
+    smooth_coordinates,
+    time,
+    T,
+    N,
+    B,
+    curvature,
+    torsion,
+    speed,
+    shapes,
+    reoriented_shape,
+    Cx,
+    Cy,
+    Cz,
+)
+##
+plt.plot(speed)
+plt.plot(curvature)
+plt.plot(torsion)
+
+plt.plot([xy_ecc xz_ecc yz_ecc])
