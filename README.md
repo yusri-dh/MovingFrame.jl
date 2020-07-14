@@ -1,3 +1,3 @@
 MovingFrame
 
-Combining moving frame and shape analysis
+Combining moving frame and shape analysis.
