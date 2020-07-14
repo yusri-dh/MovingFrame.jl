@@ -5,10 +5,7 @@ const scipy_opt = PyNULL()
 const igl = PyNULL()
 const scipy = PyNULL()
 
-function __init__()
-    copy!(igl, pyimport_conda("igl", "igl"))
-    copy!(scipy, pyimport_conda("scipy", "scipy"))
-end
+
 # igl = pyimport("igl")
 # scipy = pyimport("scipy")
 function igl_gaussian_curvature(verts,faces)

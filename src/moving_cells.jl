@@ -11,7 +11,8 @@ mutable struct MovingCells
     curvature::Array{Float64,1}
     torsion::Array{Float64,1}
     speed::Array{Float64,1}
-    shapes::Array{Mesh,1}
+    original_shapes::Array{Mesh,1}
+    reoriented_shapes::Array{Mesh,1}
     Spharm_Cx::Array{Float64,2}
     Spharm_Cy::Array{Float64,2}
     Spharm_Cz::Array{Float64,2}
@@ -73,7 +74,7 @@ function add_moving_frame_data!(cell::MovingCells; step = 0.01)
 end
 
 
-function extract_shape_data(df; base_dir = pwd())
+function extract_shape_data(df; data_dir = pwd())
     @assert length(unique(df.trackid)) == 1
     cell_id = df.cellid
     gc_cell_id = df.gc_cellid
@@ -81,21 +82,43 @@ function extract_shape_data(df; base_dir = pwd())
     shapes = Vector{Mesh}(undef, length(gc_cell_id))
     for i in eachindex(gc_cell_id)
         fname = joinpath(
-            base_dir,
+            data_dir,
             "t" * lpad(t[i], 4, "0"),
             "obj0",
             "cell" * lpad(gc_cell_id[i], 5, "0") * ".obj",
         )
         # @show fname
+        shape = load(fname) |> mesh_centering |> volume_normalizing
+
         shapes[i] = load(fname)
     end
     return shapes
 end
 
+function add_shape_data!(cell::MovingCells,df;data_dir = pwd())
+    shapes = extract_shape_data(df,data_dir=data_dir)
+    cell.original_shapes = shapes
+    smooth_time = cell.smooth_time
+    step = smooth_time[2] - smooth_time[1]
+    selected_time = [
+                    1 + round(Int, 1 / step) * x
+                    for
+                    x in range(
+                        0,
+                        stop = div(length(smooth_time), round(Int, 1 / step)),
+                    )
+                ]
+    T = cell.T[selected_time, :]
+    N = cell.N[selected_time, :]
+    B = cell.B[selected_time, :]
+    reoriented_shapes = [mesh_reorientation(shapes[i], T[i, :], N[i, :], B[i, :]) for i in eachindex(shapes)]
+    cell.reoriented_shapes = reoriented_shapes
+end
+
 
 
 function add_spharm_coef_data!(cell::MovingCells)
-    reoriented_shape = cell.shapes
+    reoriented_shape = cell.reoriented_shapes
     spheres = sh.spherization.(reoriented_shape, 100)
     spharm_coefs = [
         sh.spharm_descriptor(reoriented_shape[i], spheres[i].vertices)

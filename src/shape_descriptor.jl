@@ -1,6 +1,6 @@
 function spharm_descriptor(
     verts::Array{Point{3,T1}},
-    faces::Array{Face{3,T2}},
+    faces::Array{TriangleFace{T2}},
     centered = true,
     normalized = true,
     l_max = 6,
@@ -47,7 +47,7 @@ function spharm_descriptor(
     min_diff = 1e-13,
 )
     verts = decompose(Point3f0, mesh)
-    faces = decompose(Face{3,Int}, mesh)
+    faces = decompose(TriangleFace{Int}, mesh)
     return spharm_descriptor(
         verts,
         faces;
@@ -62,7 +62,7 @@ end
 function spharm_descriptor(
     verts::Vector{Point{3,T1}},
     verts_sphere::Vector{Point{3,T1}},
-    faces::Vector{Face{3,T2}};
+    faces::Vector{TriangleFace{T2}};
     centered = true,
     normalized = true,
     l_max = 6,
@@ -103,7 +103,7 @@ function spharm_descriptor(
     min_diff = 1e-13
 ) where{T1<:Real}
     verts = decompose(Point3f0, mesh)
-    faces = decompose(Face{3,Int}, mesh)
+    faces = decompose(TriangleFace{Int}, mesh)
     return spharm_descriptor(
         verts,
         verts_sphere,
@@ -118,7 +118,7 @@ function spharm_descriptor(
 end
 function spharm_descriptor_v(
     verts::Vector{Point{3,T1}},
-    faces::Vector{Face{3,T2}},
+    faces::Vector{TriangleFace{T2}},
     val::Vector{<:AbstractFloat};
     centered = true,
     normalized = true,
@@ -162,7 +162,7 @@ function spharm_descriptor_v(
     min_diff = 1e-13,
 )
     verts = decompose(Point3f0, mesh)
-    faces = decompose(Face{3,Int}, mesh)
+    faces = decompose(TriangleFace{Int}, mesh)
     return spharm_descriptor_v(
         verts,
         faces,
@@ -179,7 +179,7 @@ end
 function spharm_descriptor_v(
     verts::Vector{Point{3,T1}},
     verts_sphere::Vector{Point{3,T1}},
-    faces::Vector{Face{3,T2}},
+    faces::Vector{TriangleFace{T2}},
     val::Vector{<:AbstractFloat},;
     centered = true,
     normalized = true,
@@ -217,7 +217,7 @@ function spharm_descriptor_v(
     min_diff = 1e-13,
 ) where {T1<:Real}
     verts = decompose(Point3f0, mesh)
-    faces = decompose(Face{3,Int}, mesh)
+    faces = decompose(TriangleFace{Int}, mesh)
     return spharm_descriptor_v(
         verts,
         verts_sphere,
@@ -280,7 +280,7 @@ function reconstruct_mesh(
     @assert length(c_x) == length(c_y) == length(c_z)
     sphere = icosphere(div, 1.0)
     verts = decompose(Point3f0, sphere)
-    triangles = decompose(Face{3,Int}, sphere)
+    triangles = decompose(TriangleFace{Int}, sphere)
     verts_spherical = cart2sph.(verts)
     pol_angles = [v[1] for v in verts_spherical]
     az_angles = [v[2] for v in verts_spherical]

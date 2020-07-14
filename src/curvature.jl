@@ -138,7 +138,7 @@ function gaussian_curvature(verts,faces)
 end
 function gaussian_curvature(mesh::Mesh)
     verts = decompose(Point3f0,mesh)
-    faces = decompose(Face{3,Int},mesh)
+    faces = decompose(TriangleFace{Int},mesh)
     return gaussian_curvature(verts,faces)
 end
 """
@@ -147,7 +147,7 @@ This function return the mean curvature of the vertex
 function mean_curvature(verts,faces)
     l = cotangent_laplacian(verts,faces)
     m = mass_matrix_barycentric(verts,faces)
-    v = Spharm.array_of_array_to_matrix(verts)
+    v = MovingFrame.array_of_array_to_matrix(verts)
     minv = spdiagm(0 => (1.0 ./ diag(m)))
 
     hn = -minv * (l * v )
@@ -157,13 +157,13 @@ function mean_curvature(verts,faces)
 end
 function mean_curvature(mesh::Mesh)
     verts = decompose(Point3f0,mesh)
-    faces = decompose(Face{3,Int},mesh)
+    faces = decompose(TriangleFace{Int},mesh)
     return mean_curvature(verts,faces)
 end
 function mean_curvature_flow(verts,faces,n_step = 10, delta = 0.001;min_diff = 1e-13)
     new_verts,_ = volume_normalizing(mesh_centering(verts,faces)...)
-    v = Spharm.array_of_array_to_matrix(new_verts)
-    f = Spharm.array_of_array_to_matrix(faces)
+    v = MovingFrame.array_of_array_to_matrix(new_verts)
+    f = MovingFrame.array_of_array_to_matrix(faces)
     new_v = v .- centroid(v)
     new_v = new_v / sqrt(surface_area2(new_v,f))
     l = cotangent_laplacian(new_v, f)
@@ -183,7 +183,7 @@ function mean_curvature_flow(verts,faces,n_step = 10, delta = 0.001;min_diff = 1
             break
         end
     end
-    new_verts::typeof(verts) = Spharm.matrix_to_vertex(new_v)
+    new_verts::typeof(verts) = MovingFrame.matrix_to_vertex(new_v)
     return new_verts
 end
 function spherization(verts,faces,n_step = 10, delta = 0.001;min_diff = 1e-13)
@@ -192,7 +192,7 @@ function spherization(verts,faces,n_step = 10, delta = 0.001;min_diff = 1e-13)
 end
 function spherization(mesh::Mesh,n_step = 10, delta = 0.001;min_diff = 1e-13)
     verts = decompose(Point3f0,mesh)
-    triangles = decompose(Face{3,Int},mesh)
+    triangles = decompose(TriangleFace{Int},mesh)
     new_verts =  mean_curvature_flow(verts,triangles,n_step, delta;min_diff = min_diff)
     return Mesh(new_verts,faces(mesh))
 end
