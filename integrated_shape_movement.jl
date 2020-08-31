@@ -4,9 +4,9 @@ using FileIO;
 using LinearAlgebra;
 using GaussianProcesses;
 using MovingFrame;
-import Plots;
-using Makie;
-const plt = Plots
+# import Plots;
+# using Makie;
+# const plt = Plots
 ##
 struct MovingCells
     coordinates::Matrix{Float64}
