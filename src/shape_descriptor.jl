@@ -136,8 +136,8 @@ function spharm_descriptor_v(
     verts_sphere, _ = spherization(
         verts,
         faces,
-        n_step,
-        delta,
+        n_step=n_step,
+        delta=delta,
         min_diff = min_diff,
     )
     verts_sphere_spherical_coords = cart2sph.(verts_sphere)
