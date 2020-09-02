@@ -11,7 +11,7 @@ using CSV
 using FileIO: load, save
 
 function __init__()
-    copy!(igl, pyimport_conda("igl", "igl"))
+    copy!(igl, pyimport_conda("igl", "igl","conda-forge"))
     copy!(scipy, pyimport_conda("scipy", "scipy"))
 
 end
