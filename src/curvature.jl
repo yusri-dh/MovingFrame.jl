@@ -179,7 +179,7 @@ function mean_curvature_flow(verts, faces; n_step=10, delta=0.001,min_diff=1e-13
         diff = tr((new_v - old_v)' * mass_matrix_barycentric2(new_v, f) * (new_v - old_v))
         # @show diff
         if diff <= min_diff
-            println("Converged")
+            # println("Converged")
             break
         end
     end
