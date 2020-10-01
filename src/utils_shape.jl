@@ -1,5 +1,5 @@
 # using LinearAlgebra
-function cart2sph(x::T, y::T, z::T) where {T<:Real}
+function cart2sph(x::T, y::T, z::T) where {T <: Real}
     hxy = hypot(x, y)
     r = hypot(hxy, z)
     pol = atan(hxy, z)
@@ -12,7 +12,7 @@ function cart2sph(xyz::Point)
     return cart2sph(x, y, z)
 end
 
-function sph2cart(pol::T, az::T, r::T) where {T<:Real}
+function sph2cart(pol::T, az::T, r::T) where {T <: Real}
     x = r * sin(pol) * cos(az)
     y = r * sin(pol) * sin(az)
     z = r * cos(pol)
@@ -57,7 +57,7 @@ end # function
 Centering the coordinates of mesh vertices to their mean
 """
 function centroid(v::AbstractMatrix)
-    return sum(v, dims = 1) / size(v, 1)
+    return sum(v, dims=1) / size(v, 1)
 end
 function centroid(verts::Vector{T1}) where {T1}
     return reduce(+, verts) / length(verts)
@@ -84,7 +84,7 @@ function signed_volume_of_triangle(
     p1::T,
     p2::T,
     p3::T,
-) where {T<:AbstractVector}
+) where {T <: AbstractVector}
     return dot(p1, cross(p2, p3)) / 6.0
 end
 
@@ -95,7 +95,7 @@ These functions return the volume of mesh object
 function mesh_volume(
     verts::Array{Point{3,T1}},
     faces::Array{TriangleFace{T2}},
-) where {T1<:Real,T2<:Int}
+) where {T1 <: Real,T2 <: Int}
     total_vol = 0.0
     for face in faces
         vol = signed_volume_of_triangle(
@@ -120,7 +120,7 @@ These functions return the copy of mesh object with volume one
 function volume_normalizing(
     verts::Array{Point{3,T1}},
     faces::Array{TriangleFace{T2}},
-) where {T1<:Real,T2<:Int}
+) where {T1 <: Real,T2 <: Int}
     vol = mesh_volume(verts, faces)
     cbrt_vol = cbrt(vol)
     new_verts = similar(verts)
@@ -133,7 +133,7 @@ end
 function volume_normalizing2(
     verts::Array{Point{3,T1}},
     faces::Array{TriangleFace{T2}},
-) where {T1<:Real,T2<:Int}
+) where {T1 <: Real,T2 <: Int}
     vol = mesh_volume(verts, faces)
     cbrt_vol = cbrt(vol)
     new_verts = similar(verts)
@@ -199,9 +199,9 @@ function internal_angles_intrinsic(l)
     s31 = l[:, 2]
     s12 = l[:, 3]
 
-    a23 = acos.((s12 .^ 2 + s31 .^ 2 - s23 .^ 2) ./ (2 * s12 .* s31))
-    a31 = acos.((s23 .^ 2 + s12 .^ 2 - s31 .^ 2) ./ (2 * s23 .* s12))
-    a12 = acos.((s31 .^ 2 + s23 .^ 2 - s12 .^ 2) ./ (2 * s31 .* s23))
+    a23 = acos.((s12.^2 + s31.^2 - s23.^2) ./ (2 * s12 .* s31))
+    a31 = acos.((s23.^2 + s12.^2 - s31.^2) ./ (2 * s23 .* s12))
+    a12 = acos.((s31.^2 + s23.^2 - s12.^2) ./ (2 * s31 .* s23))
 
     angles = [a23 a31 a12]
     return angles
@@ -234,35 +234,44 @@ This function return the surface area)
 """
 function surface_area(v::AbstractVector, f::AbstractVector)
     nv = length(v)
-    f1 = [face[1] for face in f]
-    f2 = [face[2] for face in f]
-    f3 = [face[3] for face in f]
+    nf = length(f)
 
-    l1 = norm.(v[f2] - v[f3])
-    l2 = norm.(v[f3] - v[f1])
-    l3 = norm.(v[f1] - v[f2])
-    s = (l1 + l2 + l3) / 2.0
-    area = sqrt.(s .* (s - l1) .* (s - l2) .* (s - l3))
-    return sum(area)
+    area = 0
+    for i in 1:nf
+        l1 = norm(v[f[i][2]] - v[f[i][3]])
+        l2 = norm(v[f[i][3]] - v[f[i][1]])
+        l3 = norm(v[f[i][1]] - v[f[i][2]])
+        s = (l1 + l2 + l3) / 2.0
+        square_area = s * (s - l1) * (s - l2) * (s - l3)
+        if square_area < 0.0; square_area = 0.0 end
+
+        area += sqrt(square_area)
+    end
+    return area
 end
-function surface_area(v::Matrix{<:AbstractFloat}, f::Matrix{<:Signed})
+
+function surface_area_list(v::Matrix{<:AbstractFloat}, f::Matrix{<:Signed})
     f1 = @view f[:, 1]
     f2 = @view f[:, 2]
     f3 = @view f[:, 3]
 
-    l1 = sqrt.(sum((v[f2, :] - v[f3, :]) .^ 2, dims = 2))
-    l2 = sqrt.(sum((v[f3, :] - v[f1, :]) .^ 2, dims = 2))
-    l3 = sqrt.(sum((v[f1, :] - v[f2, :]) .^ 2, dims = 2))
+    l1 = sqrt.(sum((view(v, f2, :) - view(v, f3, :)).^2, dims=2))
+    l2 = sqrt.(sum((view(v, f3, :) - view(v, f1, :)).^2, dims=2))
+    l3 = sqrt.(sum((view(v, f1, :) - view(v, f2, :)).^2, dims=2))
     s = (l1 + l2 + l3) / 2.0
-    # @show s
-    area = sqrt.(s .* (s - l1) .* (s - l2) .* (s - l3))
+    squared_area = s .* (s - l1) .* (s - l2) .* (s - l3)
+    area = sqrt.(squared_area)
+    return area
+end
+function surface_area(v::Matrix{<:AbstractFloat}, f::Matrix{<:Signed})
+    area = surface_area_list(v, f)
     return sum(area)
 end
 function surface_area2(v::AbstractVector, f::AbstractVector)
     f1 = [face[1] for face in f]
     f2 = [face[2] for face in f]
     f3 = [face[3] for face in f]
-    #F x 3 matrices of triangle edge vectors, named after opposite vertices
+    # F x 3 matrices of triangle edge vectors, named after opposite vertices
     v1 = [v[f3[i]] - v[f2[i]] for i in eachindex(f)]
     v2 = [v[f1[i]] - v[f3[i]] for i in eachindex(f)]
     # v3 = [v[f2[i]] - v[f1[i]] for i in eachindex(f)];
@@ -274,20 +283,15 @@ function surface_area2(v::Matrix{<:AbstractFloat}, f::Matrix{<:Signed})
     f1 = @view f[:, 1]
     f2 = @view f[:, 2]
     f3 = @view f[:, 3]
-    #F x 3 matrices of triangle edge vectors, named after opposite vertices
-    v1 = v[f3, :] - v[f2, :]
-    v2 = v[f1, :] - v[f3, :]
+    # F x 3 matrices of triangle edge vectors, named after opposite vertices
+    v1 = view(v, f3, :) - view(v, f2, :)
+    v2 = view(v, f1, :) - view(v, f3, :)
     # v3 = v[f2,:] - v[f1,:];
     n = [cross(v1[i, :], v2[i, :]) for i = 1:size(v1, 1)]
     area = norm.(n) / 2.0
     return sum(area)
 end
-"""
-This function return the surface area)
-"""
-function double_surface_area(v, f)
-    return surface_area(v, f) * 2.0
-end
+
 
 function mesh_reorientation(mesh::Mesh, T, N, B)
     verts = decompose(Point3f0, mesh)
