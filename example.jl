@@ -6,6 +6,8 @@ using InteractiveUtils
 
 # ╔═╡ ff81125a-086d-11eb-2226-eddf1955c141
 begin
+	# Activate environment. You do not need to do this if you are not using
+	# separate environment
 	push!(LOAD_PATH, "$(homedir())/pCloudDrive/julia_project")
 	using Pkg
 	Pkg.activate("/home/yusri/pCloudDrive/julia_project/MovingFrame/")
@@ -25,6 +27,7 @@ begin
 end
 
 # ╔═╡ 67beff68-ee73-11ea-3b77-fbf331f8ce9c
+# Create MovingCells Type
 struct MovingCells
     coordinates::Matrix{Float64}
     time::Vector{Float64}
@@ -47,6 +50,7 @@ end
 # ╔═╡ 7139c988-ee73-11ea-1127-25bfb372000d
 begin
 	const base_dir = pwd();
+	# You need to extract the cell_shape_final.zip first
 	const input_data_dir = joinpath(base_dir, "cell_shape_final/")
 	const input_files = readdir(input_data_dir);
 	const n_points = length(input_files)
@@ -54,6 +58,7 @@ end
 
 # ╔═╡ 9ebba1d6-ee73-11ea-1de2-d78152ef6b5e
 begin
+	# Calculating the cell trajectory
 	coordinate = Matrix{Float64}(undef, n_points, 3)
 	time = collect(1.0:n_points)
 	shapes = Vector{GeometryBasics.Mesh}(undef, n_points)
@@ -61,8 +66,10 @@ begin
 		shape = load(joinpath(input_data_dir, input_files[i]))
 		shapes[i] = shape
 		verts = decompose(Point3f0, shape)
+		# The trajectory is the mass centre of the cell
 		coordinate[i, :] .= reduce(+, verts) / length(verts)
 	end
+	# Normalizing volume and translation
 	shapes = (volume_normalizing ∘ mesh_centering).(shapes)
 	new_coordinate = coordinate .- coordinate[1, :]'
 end
@@ -83,17 +90,20 @@ begin
 end
 
 # ╔═╡ 5b0d2618-0878-11eb-0fe0-69b9357b91e9
+# Reoriented the cell shape to the Moving Frame basis
 reoriented_shape = [
     mesh_reorientation(shapes[i], T[i, :], N[i, :], B[i, :])
     for i in eachindex(shapes)
 ]
 
 # ╔═╡ 29c8a4b8-087a-11eb-3780-4fa5a2c12d0e
+# Spherical parameterization
 spheres = MovingFrame.spherization.(reoriented_shape, n_step=100)
 
 
 # ╔═╡ ed0b2ee6-090d-11eb-3516-9b7788a1859b
 begin
+	# Calculating spherical harmonics coefficients
 	spharm_coefs = [
 	    MovingFrame.spharm_descriptor(
 	        reoriented_shape[i],
@@ -107,6 +117,7 @@ end
 
 # ╔═╡ 18462938-090e-11eb-2154-45881e7ef9f1
 begin
+	# Calculating shape eccentricity
 	xy_ecc = Cx[:, 4] ./ Cy[:, 2]
 	xz_ecc = Cx[:, 4] ./ Cz[:, 3]
 	yz_ecc = Cy[:, 2] ./ Cz[:, 3]
@@ -117,8 +128,6 @@ begin
 plt.plot(smooth_coordinates[:,1],smooth_coordinates[:,2],smooth_coordinates[:,3],label ="SMOOTH_TRAJECTORY")
 plt.scatter!(new_coordinate[:,1],new_coordinate[:,2],new_coordinate[:,3],label ="OBSERVATION",markersize=1.0)
 
-# 	plt.plot(track[:,1],track[:,2],track[:,3],label ="track")
-# plt.scatter!(selected_coordinate[:,1],selected_coordinate[:,2],selected_coordinate[:,3],label ="OBSERVATION",markertype=:circle,markersize=1)
 end
 
 # ╔═╡ 46ff40b6-090e-11eb-1216-b1a6a3af5695
