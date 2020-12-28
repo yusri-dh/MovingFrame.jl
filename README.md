@@ -2,8 +2,8 @@
 
 Combining moving frame and shape analysis.
 
-## Instalation
-MovingFrame.jl requires Julia version 0.1.0 or above. To install MovingFrame.jl run the following command inside a Julia session:
+## Installation
+MovingFrame.jl requires Julia version 1.3.0 or above. To install MovingFrame.jl run the following command inside a Julia session:
 
 ```julia
 julia> using Pkg
