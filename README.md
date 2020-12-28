@@ -6,8 +6,8 @@ Combining moving frame and shape analysis.
 The MovingFrame need working installation of python package igl and scipy. It can be installed using conda command:
 
 ```
- conda install -c conda-forge igl
-  conda install -c anaconda scipy
+conda install -c conda-forge igl
+conda install -c anaconda scipy
 ```
 
 or calling conda from julia:
